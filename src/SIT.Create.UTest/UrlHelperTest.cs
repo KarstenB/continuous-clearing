@@ -386,6 +386,23 @@ namespace SIT.Create.UTest
             // Assert
             Assert.That(sourceUrlDetails.SourceUrl.Contains("apk-tools"));
         }
+
+        [TestCase("pkg:apk/alpine/apk-tools@2.12.9-r3?arch=x86_64&distro=alpine-3.16.2", "3.16-stable")]
+        [TestCase("pkg:apk/alpine/busybox@1.37.0-r20?distro=alpine-3.22", "3.22-stable")]
+        [TestCase("pkg:apk/alpine/busybox@1.37.0-r20?os_name=alpine&os_version=3.22", "3.22-stable")]
+        public void GetAlpineDistro_BomRefWithDistributionQualifiers_ReturnsTheAportsBranch(string bomRef, string expectedBranch)
+        {
+            Assert.That(UrlHelper.GetAlpineDistro(bomRef), Is.EqualTo(expectedBranch));
+        }
+
+        [TestCase("pkg:apk/alpine/busybox@1.37.0-r20")]
+        [TestCase("pkg:apk/alpine/busybox@1.37.0-r20?arch=x86_64")]
+        [TestCase("pkg:apk/alpine/busybox@1.37.0-r20?distro=alpine-edge")]
+        public void GetAlpineDistro_BomRefWithoutAKnownRelease_ReturnsTheDefaultBranch(string bomRef)
+        {
+            Assert.That(UrlHelper.GetAlpineDistro(bomRef), Is.EqualTo("master"));
+        }
+
         [Test]
         public void GetSourceFromAPKBUILD_WithValidData_ReturnsCorrectSource()
         {
@@ -499,53 +516,53 @@ namespace SIT.Create.UTest
         [TestCase(null)]
         [TestCase("")]
         [TestCase("   ")]
-        public void GetAlpineDistro_WithNullOrWhiteSpaceBomRef_ReturnsEmptyString(string bomRef)
+        public void GetAlpineDistro_WithNullOrWhiteSpaceBomRef_ReturnsDefaultBranch(string bomRef)
         {
             // Act
             string result = UrlHelper.GetAlpineDistro(bomRef);
 
             // Assert
-            Assert.That(result, Is.EqualTo(string.Empty));
+            Assert.That(result, Is.EqualTo("master"));
         }
 
         [Test]
-        public void GetAlpineDistro_WithoutDistroKeyword_ReturnsEmptyString()
+        public void GetAlpineDistro_WithoutDistroKeyword_ReturnsDefaultBranch()
         {
             // Act
             string result = UrlHelper.GetAlpineDistro("pkg:apk/alpine/apk-tools@2.12.9-r3");
 
             // Assert
-            Assert.That(result, Is.EqualTo(string.Empty));
+            Assert.That(result, Is.EqualTo("master"));
         }
 
         [Test]
-        public void GetAlpineDistro_WithTooFewVersionSegments_ReturnsEmptyString()
+        public void GetAlpineDistro_WithTooFewVersionSegments_ReturnsDefaultBranch()
         {
-            // Act - after splitting on "distro" there is no "-" separated version part
+            // Act
             string result = UrlHelper.GetAlpineDistro("pkg:apk/alpine/apk-tools@2.12.9-r3?distro=alpine");
 
             // Assert
-            Assert.That(result, Is.EqualTo(string.Empty));
+            Assert.That(result, Is.EqualTo("master"));
         }
 
         [Test]
-        public void GetAlpineDistro_WithShortVersionSegment_ReturnsEmptyString()
+        public void GetAlpineDistro_WithShortVersionSegment_ReturnsDefaultBranch()
         {
-            // Act - version segment has fewer than 2 characters
+            // Act
             string result = UrlHelper.GetAlpineDistro("pkg:apk/alpine/apk-tools@2.12.9-r3?distro=alpine-1");
 
             // Assert
-            Assert.That(result, Is.EqualTo(string.Empty));
+            Assert.That(result, Is.EqualTo("master"));
         }
 
         [Test]
-        public void GetAlpineDistro_WithNonNumericVersionSegment_ReturnsEmptyString()
+        public void GetAlpineDistro_WithNonNumericVersionSegment_ReturnsDefaultBranch()
         {
-            // Act - resulting distro value fails the stable branch name regex, e.g. "0.-stable"
+            // Act
             string result = UrlHelper.GetAlpineDistro("pkg:apk/alpine/apk-tools@2.12.9-r3?distro=alpine-0.1x");
 
             // Assert
-            Assert.That(result, Is.EqualTo(string.Empty));
+            Assert.That(result, Is.EqualTo("master"));
         }
 
         #endregion

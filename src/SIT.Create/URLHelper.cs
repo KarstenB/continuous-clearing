@@ -47,6 +47,7 @@ namespace SIT.Create
 
         private const string SrcUrlFailWarnFormat = "Identification of SRC url failed for {0}, Exclude if it is an internal component or manually update the SRC url";
         private const string AportsDirectoryName = "aports";
+        private const string AportsDefaultBranch = "master";
         private const string SourcePackageType = "source";
 
         private bool _disposed;
@@ -103,43 +104,64 @@ namespace SIT.Create
         }
 
         /// <summary>
-        /// Gets Alpine Distro
+        /// Gets the aports branch of a component from the qualifiers of its bom reference, e.g. "3.22-stable" for
+        /// "pkg:apk/alpine/busybox@1.37.0-r20?distro=alpine-3.22".
         /// </summary>
         /// <param name="bomRef"></param>
-        /// <returns>distro</returns>
+        /// <returns>the aports branch to check out</returns>
         public static string GetAlpineDistro(string bomRef)
         {
-            if (string.IsNullOrWhiteSpace(bomRef))
+            string release = GetAlpineRelease(bomRef);
+
+            if (string.IsNullOrEmpty(release))
+            {
+                Logger.WarnFormat("GetAlpineDistro(): The Alpine release of {0} is unknown, using the {1} branch of aports.", bomRef, AportsDefaultBranch);
+                return AportsDefaultBranch;
+            }
+
+            string distro = $"{release}-stable";
+            return IsValidAlpineDistro(distro) ? distro : AportsDefaultBranch;
+        }
+
+        /// <summary>
+        /// Reads the Alpine release from the distribution qualifiers of a package url, e.g. "3.22" for
+        /// "...?distro=alpine-3.22.1" (syft) as well as for "...?os_name=alpine&amp;os_version=3.22" (Docker Scout).
+        /// </summary>
+        /// <param name="purl"></param>
+        /// <returns>the release as "&lt;major&gt;.&lt;minor&gt;", or an empty string if no release is stated</returns>
+        private static string GetAlpineRelease(string purl)
+        {
+            int qualifierStart = purl?.IndexOf('?') ?? -1;
+
+            if (qualifierStart < 0)
             {
                 return string.Empty;
             }
 
-            string[] getDistro = bomRef.Split("distro");
-            if (getDistro.Length < 2)
+            foreach (string qualifier in purl.Substring(qualifierStart + 1).Split('&', StringSplitOptions.RemoveEmptyEntries))
             {
-                return string.Empty;
+                string[] keyValue = qualifier.Split('=', 2);
+                if (keyValue.Length != 2)
+                {
+                    continue;
+                }
+
+                string key = keyValue[0].Trim();
+                if (!key.Equals("distro", StringComparison.OrdinalIgnoreCase)
+                    && !key.Equals("os_distro", StringComparison.OrdinalIgnoreCase)
+                    && !key.Equals("os_version", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                Match release = AlpineReleaseRegex().Match(WebUtility.UrlDecode(keyValue[1]).Trim());
+                if (release.Success)
+                {
+                    return release.Value;
+                }
             }
 
-            string[] getDestroVersion = getDistro[1].Split("-");
-            if (getDestroVersion.Length < 2 || getDestroVersion[1].Length < 2)
-            {
-                return string.Empty;
-            }
-
-            var output = getDestroVersion[1][..^2];
-            var distro = output + "-stable";
-
-            // The distro value is derived from an untrusted bom-ref and is later passed to
-            // "git checkout". Only accept well-formed Alpine stable branch names (e.g. "3.19-stable")
-            // so that no value containing an option prefix ("-"/"--") or shell/argument
-            // metacharacters can ever reach the git command line.
-            if (!IsValidAlpineDistro(distro))
-            {
-                Logger.DebugFormat("GetAlpineDistro(): Ignoring unsafe distro value derived from bomRef: {0}", distro);
-                return string.Empty;
-            }
-
-            return distro;
+            return string.Empty;
         }
 
         /// <summary>
@@ -1326,6 +1348,8 @@ namespace SIT.Create
         private static partial Regex AlpineComponentVersionRegex();
         [GeneratedRegex(@"\=")]
         private static partial Regex AlpinePackagelineRegex();
+        [GeneratedRegex(@"[0-9]+\.[0-9]+(?=(?:\.[0-9]+)?$)")]
+        private static partial Regex AlpineReleaseRegex();
 
         // Matches valid npm semantic version characters (digits, letters, '.', '-', '+'); 5s timeout guards against pathological input.
         [GeneratedRegex(@"^[a-zA-Z0-9.\-+]+$", RegexOptions.None, 5000)]
