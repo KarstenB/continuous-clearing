@@ -70,5 +70,13 @@ namespace SIT.Scan.Interface
         /// <param name="jFrogService">The JFrog service instance.</param>
         /// <returns>A task representing the asynchronous operation that returns a list of AQL results.</returns>
         public Task<List<AqlResult>> GetCargoListOfComponentsFromRepo(string[] repoList, IJFrogService jFrogService);
+
+        /// <summary>
+        /// Asynchronously gets the list of Golang components from the specified repositories.
+        /// </summary>
+        /// <param name="repoList">The array of repository names.</param>
+        /// <param name="jFrogService">The JFrog service instance.</param>
+        /// <returns>A task representing the asynchronous operation that returns a list of AQL results.</returns>
+        public Task<List<AqlResult>> GetGolangListOfComponentsFromRepo(string[] repoList, IJFrogService jFrogService);
     }
 }

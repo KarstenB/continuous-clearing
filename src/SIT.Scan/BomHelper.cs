@@ -284,6 +284,27 @@ namespace SIT.Scan
         }
 
         /// <summary>
+        /// Asynchronously retrieves Golang component information from the specified repositories.
+        /// </summary>
+        /// <param name="repoList">Array of repository names.</param>
+        /// <param name="jFrogService">JFrog service to execute queries.</param>
+        /// <returns>Asynchronously returns aggregated AQL results for Golang components.</returns>
+        public async Task<List<AqlResult>> GetGolangListOfComponentsFromRepo(string[] repoList, IJFrogService jFrogService)
+        {
+            List<AqlResult> aqlResultList = new();
+            if (repoList != null && repoList.Length > 0)
+            {
+                foreach (var repo in repoList)
+                {
+                    var componentRepoData = await jFrogService.GetGolangComponentDataByRepo(repo) ?? new List<AqlResult>();
+                    aqlResultList.AddRange(componentRepoData);
+                }
+            }
+
+            return aqlResultList;
+        }
+
+        /// <summary>
         /// Parses a CycloneDX or SPDX BOM file and returns a Bom instance. Unsupported components are accumulated.
         /// </summary>
         /// <param name="filePath">Path to the BOM file.</param>

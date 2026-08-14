@@ -112,6 +112,16 @@ namespace SIT.Services
         }
 
         /// <summary>
+        /// Retrieves a collection of Golang component data for the specified repository.
+        /// </summary>
+        /// <param name="repoName">The name of the repository from which to retrieve Golang component data. Cannot be null or empty.</param>
+        /// <returns>A list of <see cref="AqlResult"/> objects containing Golang component data for the specified repository.</returns>
+        public async Task<IList<AqlResult>> GetGolangComponentDataByRepo(string repoName)
+        {
+            return await GetComponentDataByRepo(m_JFrogApiCommunicationFacade.GetGolangComponentDataByRepo, repoName);
+        }
+
+        /// <summary>
         /// Retrieves package information from Artifactory for the specified component.
         /// </summary>       
         /// <param name="component">The component for which to retrieve package information. Must specify valid identifiers for the target

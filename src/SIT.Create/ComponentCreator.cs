@@ -318,6 +318,9 @@ namespace SIT.Create
                 case "CARGO":
                     componentsData.SourceUrl = await UrlHelper.Instance.GetSourceUrlForCargoPackage(name, version);
                     break;
+                case "GOLANG":
+                    componentsData.SourceUrl = await UrlHelper.Instance.GetSourceUrlForGolangPackage(name, version);
+                    break;
                 default:
                     break;
             }

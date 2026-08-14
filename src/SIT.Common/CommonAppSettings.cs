@@ -33,6 +33,9 @@ namespace SIT.Common
 
         public static string SourceUrlForCargo { get; set; } = $"api/v1/crates/";
         public static string SourceBaseUrlForCargo { get; set; } = $"https://crates.io";
+        public static string SourceBaseUrlForGolang { get; set; } = $"https://proxy.golang.org";
+        public static string SourceBaseUrlForGolangStdlib { get; set; } = $"https://dl.google.com/go/";
+        public static string PkgGoDevUrl { get; set; } = $"https://pkg.go.dev/";
         public bool Verbose { get; set; } = false;
         private string m_ProjectType;
         public CommonAppSettings()
@@ -67,6 +70,7 @@ namespace SIT.Common
         public Config Conan { get; set; }
         public Config Cargo { get; set; }
         public Config Choco { get; set; }
+        public Config Golang { get; set; }
         public string Mode { get; set; } = string.Empty;
         public SbomSigningConfig SbomSigning { get; set; }
 
