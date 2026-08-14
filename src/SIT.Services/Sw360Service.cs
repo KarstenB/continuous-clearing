@@ -302,7 +302,7 @@ namespace SIT.Services
             }
             try
             {
-                string filePath = $"{Path.GetTempPath()}ClearingTool\\DownloadedFiles/{attachmentHash.SW360AttachmentName}";
+                string filePath = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles", attachmentHash.SW360AttachmentName);
                 fileName = $"{filePath}";
                 System.IO.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 

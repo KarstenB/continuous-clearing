@@ -28,7 +28,7 @@ namespace SIT.Create.UTest
                 AlpineSource = ""
 
             };
-            var localPathforDownload = $"{Directory.GetParent(Directory.GetCurrentDirectory())}\\ClearingTool\\DownloadedFiles\\";
+            var localPathforDownload = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
             var alpinePackageDownloader = new AlpinePackageDownloader();
 
             //Act

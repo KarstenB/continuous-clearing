@@ -320,7 +320,7 @@ namespace SIT.Create
             string localPathforSourceRepo = string.Empty;
             try
             {
-                localPathforSourceRepo = $"{Directory.GetParent(Directory.GetCurrentDirectory())}\\ClearingTool\\DownloadedFiles\\";
+                localPathforSourceRepo = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
                 if (!Directory.Exists(localPathforSourceRepo))
                 {
                     localPathforSourceRepo = Directory.CreateDirectory(localPathforSourceRepo).ToString();

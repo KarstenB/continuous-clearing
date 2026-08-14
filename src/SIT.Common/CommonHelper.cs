@@ -463,7 +463,7 @@ namespace SIT.Common
             string localPathforSourceRepo = string.Empty;
             try
             {
-                localPathforSourceRepo = $"{Path.GetTempPath()}ClearingTool\\DownloadedFiles/";
+                localPathforSourceRepo = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
                 if (!System.IO.Directory.Exists(localPathforSourceRepo))
                 {
                     System.IO.Directory.CreateDirectory(localPathforSourceRepo);

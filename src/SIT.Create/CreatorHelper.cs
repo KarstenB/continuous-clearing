@@ -285,7 +285,7 @@ namespace SIT.Create
         /// <returns>task that returns asynchronous operation</returns>
         private static async Task DownloadDependencyList(ComparisonBomData component)
         {
-            string localPathforDownload = $"{Path.GetTempPath()}ClearingTool\\DownloadedFiles/";
+            string localPathforDownload = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             Process p = new();
             p.StartInfo.RedirectStandardError = true;
@@ -605,15 +605,15 @@ namespace SIT.Create
             {
                 if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[DebianPackageType]))
                 {
-                    localPathforDownload = $"{Directory.GetParent(Directory.GetCurrentDirectory())}/ClearingTool/DownloadedFiles/";
+                    localPathforDownload = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
                 }
                 else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[AlpinePackageType]))
                 {
-                    localPathforDownload = $"{Directory.GetParent(Directory.GetCurrentDirectory())}/ClearingTool/DownloadedFiles/";
+                    localPathforDownload = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
                 }
                 else
                 {
-                    localPathforDownload = $"{Path.GetTempPath()}/ClearingTool/DownloadedFiles/";
+                    localPathforDownload = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles") + Path.DirectorySeparatorChar;
                 }
             }
             catch (IOException ex)

@@ -201,7 +201,7 @@ namespace SIT.Upload
             try
             {
                 String Todaysdate = DateTime.Now.ToString("dd-MM-yyyy_ss");
-                localPathforartifactory = $"{Directory.GetParent(Directory.GetCurrentDirectory())}\\ClearingTool\\ArtifactoryFiles\\{Todaysdate}\\";
+                localPathforartifactory = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(), "ClearingTool", "ArtifactoryFiles", Todaysdate) + Path.DirectorySeparatorChar;
                 if (!Directory.Exists(localPathforartifactory))
                 {
                     localPathforartifactory = Directory.CreateDirectory(localPathforartifactory).ToString();
