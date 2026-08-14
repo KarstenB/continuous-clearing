@@ -264,9 +264,10 @@ namespace SIT.Create
             if (Directory.GetDirectories(localPathforDownload).Length != 0)
             {
 
-                var tempFolder = Directory.CreateDirectory($"{Directory.GetParent(Directory.GetCurrentDirectory())}" +
-                                    $"\\ClearingTool\\DownloadedFiles\\SourceCodeZipped\\{component.Name}\\--" +
-                                    $"{DateTime.Now.ToString("yyyyMMddHHmmss")}\\");
+                var tempFolderPath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).ToString(),
+                                    "ClearingTool", "DownloadedFiles", "SourceCodeZipped", component.Name,
+                                    $"--{DateTime.Now:yyyyMMddHHmmss}") + Path.DirectorySeparatorChar;
+                var tempFolder = Directory.CreateDirectory(tempFolderPath);
                 tarArchivePath = tempFolder + (component.Name + "_" + component.Version) + ".tar.gz";
                 var InputDirectory = localPathforDownload;
                 var OutputFilename = tarArchivePath;

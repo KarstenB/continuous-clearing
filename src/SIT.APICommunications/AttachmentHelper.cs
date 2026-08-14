@@ -34,7 +34,7 @@ namespace SIT.APICommunications
         /// <summary>
         /// The full path to the attachment JSON file.
         /// </summary>
-        private readonly string fullPathOfAttachmentJSON = $"{Path.GetTempPath()}/ClearingTool/DownloadedFiles/Attachment.json";
+        private readonly string fullPathOfAttachmentJSON = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles", "Attachment.json");
 
         /// <summary>
         /// The SW360 authentication token.
@@ -117,7 +117,7 @@ namespace SIT.APICommunications
                 lock (attachmentsJSONFileLock)
                 {
                     FileInfo fileToUpload = new FileInfo(attachReport.AttachmentFile);
-                    string localPath = $"{Path.GetTempPath()}/ClearingTool/DownloadedFiles";
+                    string localPath = Path.Combine(Path.GetTempPath(), "ClearingTool", "DownloadedFiles");
 
                     var filename = fileToUpload.Exists && !string.IsNullOrEmpty(fileToUpload.Name) ? fileToUpload.Name : ApiConstant.AttachmentJsonFileName;
                     WriteAttachmentsJSONFile(filename, localPath, attachReport);
