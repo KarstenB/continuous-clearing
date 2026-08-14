@@ -200,6 +200,10 @@ namespace SIT.Common.Constants
         /// File extension for crate files.
         /// </summary>
         public const string CrateFileExtension = ".crate";
+        /// <summary>
+        /// File extension for Go module archives.
+        /// </summary>
+        public const string GolangFileExtension = ".zip";
         public const string DependencyFileExtension = "cdx_dep.json";
 
         #endregion

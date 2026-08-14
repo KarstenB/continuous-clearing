@@ -437,7 +437,8 @@ namespace SIT.Common
         { "DEBIAN", () => appSettings.Debian },
         { "MAVEN", () => appSettings.Maven },
         { "CARGO", () => appSettings.Cargo },
-        { "CHOCO", () => appSettings.Choco }
+        { "CHOCO", () => appSettings.Choco },
+        { "GOLANG", () => appSettings.Golang }
     };
             if (projectTypeMappings.TryGetValue(appSettings.ProjectType.ToUpperInvariant(), out var getConfig))
             {
@@ -1028,6 +1029,7 @@ namespace SIT.Common
                 "NPM" => "npm",
                 "NUGET" => "NuGet",
                 "ALPINE" => "Alpine",
+                "GOLANG" => "Golang",
                 _ => projectType.Trim(),
             };
         }

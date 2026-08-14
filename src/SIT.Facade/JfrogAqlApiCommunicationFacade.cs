@@ -75,6 +75,16 @@ namespace SIT.Facade
         }
 
         /// <summary>
+        /// Gets the Golang Component Data By Repo Name
+        /// </summary>
+        /// <param name="repoName">repoName</param>
+        /// <returns>HttpResponseMessage</returns>
+        public async Task<HttpResponseMessage> GetGolangComponentDataByRepo(string repoName)
+        {
+            return await m_jfrogAqlApiCommunication.GetGolangComponentDataByRepo(repoName);
+        }
+
+        /// <summary>
         /// Gets the package information in the repo, via the name or path
         /// </summary>
         /// <param name="repoName">repoName</param>

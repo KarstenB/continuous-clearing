@@ -549,7 +549,8 @@ namespace SIT.Common.Logging
         { "Poetry", appSettings.Poetry },
         { "Cargo",appSettings.Cargo },
         { "Conan", appSettings.Conan },
-        { "Choco", appSettings.Choco }
+        { "Choco", appSettings.Choco },
+        { "Golang", appSettings.Golang }
     };
         }
 

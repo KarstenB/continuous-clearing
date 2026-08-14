@@ -229,6 +229,9 @@ namespace SIT.Scan
                 case "CHOCO":
                     parser = new ChocoProcessor(CycloneDXBomParser, SpdxBomParser);
                     return await ComponentIdentification(appSettings, parser);
+                case "GOLANG":
+                    parser = new GolangProcessor(CycloneDXBomParser, SpdxBomParser);
+                    return await ComponentIdentification(appSettings, parser);
                 default:
                     LogHandlingHelper.BasicErrorHandling("Identified invalid projecttype", "CallPackageParser()", $"Invalid project type was provided: {appSettings.ProjectType}", "Provide Valid project type in configuration.");
                     Logger.ErrorFormat("GenerateBom():Invalid ProjectType - {0}", appSettings.ProjectType);

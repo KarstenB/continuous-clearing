@@ -44,6 +44,13 @@ namespace SIT.APICommunications.Interfaces
         Task<HttpResponseMessage> GetCargoComponentDataByRepo(string repoName);
 
         /// <summary>
+        /// Asynchronously gets the Golang component data based on repository name.
+        /// </summary>
+        /// <param name="repoName">The repository name.</param>
+        /// <returns>A task containing the HTTP response message.</returns>
+        Task<HttpResponseMessage> GetGolangComponentDataByRepo(string repoName);
+
+        /// <summary>
         /// Asynchronously gets the package information in the repository.
         /// </summary>
         /// <param name="component">The component to query in Artifactory.</param>

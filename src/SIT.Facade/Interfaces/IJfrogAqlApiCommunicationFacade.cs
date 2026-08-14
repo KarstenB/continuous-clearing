@@ -40,6 +40,13 @@ namespace SIT.Facade.Interfaces
         /// <returns>HttpResponseMessage</returns>
         Task<HttpResponseMessage> GetCargoComponentDataByRepo(string repoName);
 
+        /// <summary>
+        /// Asynchronously gets the Golang component data based on repository name.
+        /// </summary>
+        /// <param name="repoName">The repository name.</param>
+        /// <returns>A task containing the HTTP response message.</returns>
+        Task<HttpResponseMessage> GetGolangComponentDataByRepo(string repoName);
+
 
         /// <summary>
         /// Gets the package information in the repo, via the name or path

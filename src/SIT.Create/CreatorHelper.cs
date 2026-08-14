@@ -153,6 +153,13 @@ namespace SIT.Create
             {
                 downloadPath = await DownloadCargoSource(component, localPathforDownload);
             }
+            else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["GOLANG"]))
+            {
+                if (!string.IsNullOrEmpty(component.SourceUrl))
+                {
+                    downloadPath = await _packageDownloderList["NPM"].DownloadPackage(component, localPathforDownload);
+                }
+            }
             else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.AlpineProjectType]))
             {
                 if (!string.IsNullOrEmpty(component.SourceUrl))
@@ -509,7 +516,8 @@ namespace SIT.Create
             return item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.PoetryProjectType]) ||
                    item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.ConanProjectType]) ||
                    item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.AlpineProjectType]) ||
-                   item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.CargoProjectType]);
+               item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[Dataconstant.CargoProjectType]) ||
+                   item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["GOLANG"]);
         }
 
         /// <summary>
