@@ -39,7 +39,8 @@ namespace SIT.Scan
         { "CONAN", () => appSettings?.Conan?.Include },
         { "ALPINE", () => appSettings?.Alpine?.Include },
         { "CARGO", () => appSettings?.Cargo?.Include },
-        { "CHOCO", () => appSettings?.Choco?.Include }
+        { "CHOCO", () => appSettings?.Choco?.Include },
+        { "GOLANG", () => appSettings?.Golang?.Include }
     };
 
             if (includeMappings.TryGetValue(appSettings.ProjectType, out var getIncludeList))
@@ -79,7 +80,8 @@ namespace SIT.Scan
         { "CONAN", () => appSettings?.Conan?.Exclude },
         { "ALPINE", () => appSettings?.Alpine?.Exclude },
         { "CARGO", () => appSettings?.Cargo?.Exclude },
-        { "CHOCO", () => appSettings?.Choco?.Exclude }
+        { "CHOCO", () => appSettings?.Choco?.Exclude },
+        { "GOLANG", () => appSettings?.Golang?.Exclude }
     };
 
             if (excludeMappings.TryGetValue(appSettings.ProjectType, out var getExcludeList))
@@ -137,7 +139,8 @@ namespace SIT.Scan
         { "CONAN", () => appSettings?.Conan?.Artifactory.InternalRepos },
         { "ALPINE", () => appSettings?.Alpine?.Artifactory.InternalRepos },
         { "CARGO", () => appSettings?.Cargo?.Artifactory.InternalRepos },
-        { "CHOCO", () => appSettings?.Choco?.Artifactory.InternalRepos }
+        { "CHOCO", () => appSettings?.Choco?.Artifactory.InternalRepos },
+        { "GOLANG", () => appSettings?.Golang?.Artifactory.InternalRepos }
         };
 
             if (repoMapping.TryGetValue(appSettings.ProjectType, out var getRepos))

@@ -41,6 +41,13 @@ namespace SIT.Services.Interface
         /// <param name="repoName">repoName</param>
         /// <returns>IList<AqlResult></returns>
         public Task<IList<AqlResult>> GetCargoComponentDataByRepo(string repoName);
+
+        /// <summary>
+        /// Asynchronously gets the Golang component data based on repository name.
+        /// </summary>
+        /// <param name="repoName">The repository name.</param>
+        /// <returns>A task containing the list of AQL results.</returns>
+        public Task<IList<AqlResult>> GetGolangComponentDataByRepo(string repoName);
         /// <summary>
         /// Gets the package information in the repo, via the name or path
         /// </summary>

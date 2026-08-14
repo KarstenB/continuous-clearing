@@ -22,6 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -49,6 +50,7 @@ namespace SIT.Create
         private const string AportsDirectoryName = "aports";
         private const string AportsDefaultBranch = "master";
         private const string SourcePackageType = "source";
+        private const string GolangStdlibName = "golang";
 
         private bool _disposed;
 
@@ -626,6 +628,83 @@ namespace SIT.Create
             }
             return repositoryUrl;
         }
+
+        /// <summary>
+        /// Gets the Source URL for GOLANG Packages
+        /// </summary>
+        /// <param name="componentName">The Go module path, or "golang" for the standard library.</param>
+        /// <param name="componentVersion">The module version.</param>
+        /// <returns>string</returns>
+        public async Task<string> GetSourceUrlForGolangPackage(string componentName, string componentVersion)
+        {
+            string downLoadUrl = GetGolangDownloadUrl(componentName, componentVersion);
+            try
+            {
+                using var localHttpClient = new HttpClient();
+                localHttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ContinuousClearing");
+                using var request = new HttpRequestMessage(HttpMethod.Head, downLoadUrl);
+                var response = await GithubAuthHelper.SendAuthenticatedAsync(localHttpClient, request);
+                if (response.IsSuccessStatusCode)
+                {
+                    Logger.DebugFormat("GetSourceUrlForGolangPackage(): Identified source URL: {0}", downLoadUrl);
+                    return downLoadUrl;
+                }
+
+                Logger.WarnFormat(SrcUrlFailWarnFormat, componentName);
+                Logger.DebugFormat("GetSourceUrlForGolangPackage(): HTTP Status: {0} for URL: {1}", response.StatusCode, downLoadUrl);
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.Debug("GetSourceUrlForGolangPackage()", ex);
+                Logger.WarnFormat(SrcUrlFailWarnFormat, componentName);
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Builds the download URL for a Go module or for the Go standard library.
+        /// </summary>
+        /// <param name="componentName">The Go module path, or "golang" for the standard library.</param>
+        /// <param name="componentVersion">The module version.</param>
+        /// <returns>string</returns>
+        public static string GetGolangDownloadUrl(string componentName, string componentVersion)
+        {
+            if (string.Equals(componentName, GolangStdlibName, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"{CommonAppSettings.SourceBaseUrlForGolangStdlib}go{componentVersion?.TrimStart('v')}.src.tar.gz";
+            }
+
+            return $"{CommonAppSettings.SourceBaseUrlForGolang}{Dataconstant.ForwardSlash}{EscapeGolangPath(componentName)}" +
+                   $"{Dataconstant.ForwardSlash}@v{Dataconstant.ForwardSlash}{EscapeGolangPath(componentVersion)}.zip";
+        }
+
+        /// <summary>
+        /// Applies the Go module proxy case encoding: every upper case letter becomes '!' plus its lower case form.
+        /// </summary>
+        /// <param name="value">Module path or version to encode.</param>
+        /// <returns>string</returns>
+        public static string EscapeGolangPath(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            StringBuilder escaped = new StringBuilder(value.Length);
+            foreach (char character in value)
+            {
+                if (char.IsUpper(character))
+                {
+                    escaped.Append('!').Append(char.ToLowerInvariant(character));
+                }
+                else
+                {
+                    escaped.Append(character);
+                }
+            }
+            return escaped.ToString();
+        }
+
         /// <summary>
         /// Gets the Source URL for CONAN Packages
         /// </summary>
@@ -644,7 +723,7 @@ namespace SIT.Create
                 try
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, downLoadUrl);
-                    var response = await _httpClient.SendAsync(request);
+                    var response = await GithubAuthHelper.SendAuthenticatedAsync(_httpClient, request);
                     response.EnsureSuccessStatusCode();
                     var jsonObject = await response.Content.ReadAsStringAsync();
                     Sources packageSourcesInfo = deserializer.Deserialize<Sources>(jsonObject);

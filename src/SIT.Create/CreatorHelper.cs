@@ -154,6 +154,13 @@ namespace SIT.Create
             {
                 downloadPath = await DownloadCargoSource(component, localPathforDownload);
             }
+            else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["GOLANG"]))
+            {
+                if (!string.IsNullOrEmpty(component.SourceUrl))
+                {
+                    downloadPath = await _packageDownloderList["NPM"].DownloadPackage(component, localPathforDownload);
+                }
+            }
             else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[AlpinePackageType]))
             {
                 if (!string.IsNullOrEmpty(component.SourceUrl))
@@ -453,7 +460,8 @@ namespace SIT.Create
             return item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["POETRY"]) ||
                    item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["CONAN"]) ||
                    item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[AlpinePackageType]) ||
-                   item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["CARGO"]);
+                   item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["CARGO"]) ||
+                   item.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["GOLANG"]);
         }
 
         /// <summary>

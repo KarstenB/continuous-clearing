@@ -1052,6 +1052,8 @@ namespace SIT.Common.UTest
         [TestCase("NuGet", "NuGet")]
         [TestCase("nuget", "NuGet")]
         [TestCase("Nuget", "NuGet")]
+        [TestCase("golang", "Golang")]
+        [TestCase("GOLANG", "Golang")]
         [TestCase("ALPINE", "Alpine")]
         [TestCase("alpine", "Alpine")]
         [TestCase("  ALPINE  ", "Alpine")]

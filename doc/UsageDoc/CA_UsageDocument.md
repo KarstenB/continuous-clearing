@@ -71,7 +71,7 @@
 
 
 # Introduction
-Welcome to the Continuous Clearing Tool, your automated solution for streamlining the SW360 clearing process. Designed with Project Managers and Developers in mind, this tool efficiently manages third-party components across various platforms, including npm, NuGet, Maven, Python, Conan, Choco, Cargo, Alpine, and Debian.
+Welcome to the Continuous Clearing Tool, your automated solution for streamlining the SW360 clearing process. Designed with Project Managers and Developers in mind, this tool efficiently manages third-party components across various platforms, including npm, NuGet, Maven, Python, Conan, Choco, Cargo, Golang, Alpine, and Debian.
 
 ## Key Features
 - **Automated Scanning and Identification**: The tool automatically scans and identifies third-party components in your projects.
@@ -184,6 +184,13 @@ Users have the flexibility to generate a basic SBOM even if connections to SW360
 `Note: The default setting for the JFrog dry run is true. This flag is intended to perform a dry run of the component copy/move operation, verifying the components' paths and permissions before executing the actual operation.`
 
 ### **Prerequisite for Continuous Clearing Tool execution**
+
+* Optional environment variables
+
+  | Variable | Purpose |
+  | -------- | ------- |
+  | `GITHUB_TOKEN` | Personal access token used to authenticate requests against GitHub (`github.com`, `api.github.com`, `raw.githubusercontent.com`). Without it the tool calls GitHub anonymously and is limited to 60 requests per hour, which can cause source URL lookups to fail on larger BOMs. The token is only sent to GitHub hosts. |
+
 * Input files according to project type
 
   * **Project Type :** **npm**
@@ -270,6 +277,20 @@ Users have the flexibility to generate a basic SBOM even if connections to SW360
          After successful execution, *.metadata.json file will be created in specified directory .
     
          Resulted cargo.metadata.json file will be having the list of installed packages  and the same file will be used as  an input to Continuous clearing tool -    SIT.Scan via the input directory parameter. The remaining process is same as other project types.
+
+  * **Project Type :** **Golang**
+
+    * Golang is processed from an SBOM, there is no dedicated lock file to generate. Place a CycloneDX (`*.cdx.json`) or SPDX (`*.spdx.sbom.json`) SBOM into the input directory.
+
+    * For container images the SBOM can be produced with Docker Scout, which automatically prefers an attested SBOM when the image provides one.
+
+     **Example**: docker scout sbom --format cyclonedx --output prometheus.cdx.json registry://dhi.io/prometheus:3.13
+
+    * Components are identified by their `pkg:golang` package url. The component name keeps the full module path (for example `github.com/prometheus/common`), while the package url is lower cased as required by the package-url specification.
+
+    * The Go standard library is reported by scanners as `pkg:golang/stdlib` and is cleared as the component `golang` with the plain toolchain version, its sources are taken from `https://dl.google.com/go/`.
+
+    * Sources for all other modules are resolved from the Go module proxy, i.e. `https://proxy.golang.org/<module>/@v/<version>.zip`.
 
   * **Project Type :**  **Debian & Alpine**
 
@@ -440,7 +461,7 @@ Description for the settings in appSettings.json file
 | S.No | Argument Name                             | Description                                                   | Mandatory | Example                                                                  |
 | ---- | ----------------------------------------- | ------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
 | 1    | TimeOut                                   | Timeout in seconds                                            | No              | 400                                                                      |
-| 2    | ProjectType                               | Type of the project                                           | Yes             | `NuGet`, `npm`, `Poetry`, `Conan`, `Choco`, `Alpine`, `Debian`, `Maven`, `Cargo`                      |
+| 2    | ProjectType                               | Type of the project                                           | Yes             | `NuGet`, `npm`, `Poetry`, `Conan`, `Choco`, `Alpine`, `Debian`, `Maven`, `Cargo`, `Golang`                      |
 | 3    | MultipleProjectType                       | Whether multiple project types are supported                  | No              | `False`                                                                    |
 | 4    | Telemetry.Enable                          | Enable telemetry                                              | No              | `False`                                                                    |
 | 5    | Telemetry.ApplicationInsightsConnectionString | Application Insights instrumentation key                      | No              | `123-456-789-123-123`                                                     |

@@ -141,6 +141,16 @@ namespace SIT.APICommunications
         }
 
         /// <summary>
+        /// Asynchronously retrieves Golang component data from a specified repository.
+        /// </summary>
+        /// <param name="repoName">The name of the repository to query.</param>
+        /// <returns>An HttpResponseMessage containing the Golang component data.</returns>
+        public async Task<HttpResponseMessage> GetGolangComponentDataByRepo(string repoName)
+        {
+            return await GetComponentDataByRepo(repoName, "\"repo\", \"path\", \"name\",\"@go.name\",\"@go.version\", \"actual_sha1\",\"actual_md5\",\"sha256\"");
+        }
+
+        /// <summary>
         /// Asynchronously retrieves package information from the repository via name or path.
         /// </summary>
         /// <param name="component">The component containing package name and path information.</param>

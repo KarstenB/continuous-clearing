@@ -78,5 +78,13 @@ namespace SIT.Create.Interfaces
         /// <param name="bomRef"></param>
         /// <returns>string</returns>
         Task<string> GetSourceUrlForCargoPackage(string componentName, string componentVersion);
+
+        /// <summary>
+        /// Gets the SourceUrl For Golang Package
+        /// </summary>
+        /// <param name="componentName">The Go module path, or "golang" for the standard library.</param>
+        /// <param name="componentVersion">The module version.</param>
+        /// <returns>string</returns>
+        Task<string> GetSourceUrlForGolangPackage(string componentName, string componentVersion);
     }
 }

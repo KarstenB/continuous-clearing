@@ -157,6 +157,47 @@ namespace SIT.Create.UTest
             Assert.IsTrue(string.IsNullOrEmpty(result));
         }
 
+        [Test]
+        public void GetGolangDownloadUrl_Module_ReturnsProxyZipUrl()
+        {
+            var result = UrlHelper.GetGolangDownloadUrl("golang.org/x/sys", "v0.33.0");
+
+            Assert.AreEqual("https://proxy.golang.org/golang.org/x/sys/@v/v0.33.0.zip", result);
+        }
+
+        [Test]
+        public void GetGolangDownloadUrl_MajorVersionModule_KeepsSuffixInPath()
+        {
+            var result = UrlHelper.GetGolangDownloadUrl("github.com/go-viper/mapstructure/v2", "v2.2.1");
+
+            Assert.AreEqual("https://proxy.golang.org/github.com/go-viper/mapstructure/v2/@v/v2.2.1.zip", result);
+        }
+
+        [Test]
+        public void GetGolangDownloadUrl_UppercaseModule_AppliesCaseEncoding()
+        {
+            var result = UrlHelper.GetGolangDownloadUrl("github.com/BurntSushi/toml", "v1.2.0");
+
+            Assert.AreEqual("https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v1.2.0.zip", result);
+        }
+
+        [Test]
+        public void GetGolangDownloadUrl_Stdlib_ReturnsGoToolchainSourceUrl()
+        {
+            var result = UrlHelper.GetGolangDownloadUrl("golang", "1.24.5");
+
+            Assert.AreEqual("https://dl.google.com/go/go1.24.5.src.tar.gz", result);
+        }
+
+        [TestCase("github.com/pkg/errors", "github.com/pkg/errors")]
+        [TestCase("github.com/AzureAD/x", "github.com/!azure!a!d/x")]
+        [TestCase("", "")]
+        [TestCase(null, null)]
+        public void EscapeGolangPath_EncodesUpperCaseCharacters(string input, string expected)
+        {
+            Assert.AreEqual(expected, UrlHelper.EscapeGolangPath(input));
+        }
+
         [TestCase("CefSharp.Common", "100.0.140")]
         public async Task GetSourceUrlForNugetPackage_ProvidedPackageDetails_ReturnsValidSourceURL(string componentName, string version)
         {
