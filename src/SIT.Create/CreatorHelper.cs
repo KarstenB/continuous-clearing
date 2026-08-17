@@ -156,10 +156,7 @@ namespace SIT.Create
             }
             else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()["GOLANG"]))
             {
-                if (!string.IsNullOrEmpty(component.SourceUrl))
-                {
-                    downloadPath = await _packageDownloderList["NPM"].DownloadPackage(component, localPathforDownload);
-                }
+                downloadPath = await DownloadGolangSource(component, localPathforDownload);
             }
             else if (component.ReleaseExternalId.Contains(Dataconstant.PurlCheck()[AlpinePackageType]))
             {
@@ -178,6 +175,40 @@ namespace SIT.Create
             }
             Logger.DebugFormat("GetAttachmentUrlList():Downloaded release attachment path:Name-{0},Version-{1},DownloadPath-{2}", component.Name, component.Version, downloadPath);
             return downloadPath;
+        }
+
+        /// <summary>
+        /// Downloads the Go module archive from the module proxy. The proxy serves a plain zip, so no
+        /// repository clone is involved.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="localPathforDownload"></param>
+        /// <returns>path of the downloaded archive</returns>
+        private static async Task<string> DownloadGolangSource(ComparisonBomData component, string localPathforDownload)
+        {
+            if (string.IsNullOrEmpty(component.SourceUrl) || component.SourceUrl == Dataconstant.SourceUrlNotFound)
+            {
+                Logger.DebugFormat("DownloadGolangSource(): No source URL available for {0}-{1}", component.Name, component.Version);
+                return string.Empty;
+            }
+
+            string safeName = component.Name.Replace('/', '_').Replace('\\', '_');
+            string downloadFilePath = Path.Combine(localPathforDownload, $"{safeName}-{component.Version}{FileConstant.ZipFileExtension}");
+            string directoryPath = Path.GetDirectoryName(downloadFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            string downloadedPath = await UrlHelper.DownloadFileAsync(new Uri(component.SourceUrl), downloadFilePath);
+            if (string.IsNullOrEmpty(downloadedPath))
+            {
+                Logger.DebugFormat("DownloadGolangSource(): Failed to download source for {0}-{1} from {2}", component.Name, component.Version, component.SourceUrl);
+                return string.Empty;
+            }
+
+            component.DownloadUrl = component.SourceUrl;
+            return ConvertZipToTarGzIfNeeded(downloadedPath);
         }
 
         /// <summary>
