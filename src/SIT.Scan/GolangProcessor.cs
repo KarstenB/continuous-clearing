@@ -200,7 +200,8 @@ namespace SIT.Scan
         }
 
         /// <summary>
-        /// Splits a Go purl into its module path and version, dropping qualifiers and subpaths.
+        /// Splits a Go purl into its module path and version. Image scanners put the tail of the module
+        /// path into the purl subpath, so it is appended rather than dropped.
         /// </summary>
         private static string GetPurlSegment(string purl, out string version)
         {
@@ -212,20 +213,35 @@ namespace SIT.Scan
             }
 
             string remainder = purl[prefix.Length..];
-            int cut = remainder.IndexOfAny(new[] { '?', '#' });
-            if (cut >= 0)
+
+            string subpath = string.Empty;
+            int subpathSeparator = remainder.IndexOf('#');
+            if (subpathSeparator >= 0)
             {
-                remainder = remainder[..cut];
+                subpath = remainder[(subpathSeparator + 1)..];
+                remainder = remainder[..subpathSeparator];
             }
 
+            int qualifierSeparator = remainder.IndexOf('?');
+            if (qualifierSeparator >= 0)
+            {
+                remainder = remainder[..qualifierSeparator];
+            }
+
+            string module = remainder;
             int versionSeparator = remainder.IndexOf('@');
-            if (versionSeparator < 0)
+            if (versionSeparator >= 0)
             {
-                return remainder;
+                version = remainder[(versionSeparator + 1)..];
+                module = remainder[..versionSeparator];
             }
 
-            version = remainder[(versionSeparator + 1)..];
-            return remainder[..versionSeparator];
+            if (!string.IsNullOrEmpty(subpath))
+            {
+                module = $"{module}{Dataconstant.ForwardSlash}{subpath.Trim('/')}";
+            }
+
+            return module;
         }
 
         /// <summary>

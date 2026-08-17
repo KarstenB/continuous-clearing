@@ -117,6 +117,39 @@ namespace SIT.Scan.UTest
         }
 
         [Test]
+        public void NormalizeGolangComponent_AppendsPurlSubpathToModulePath()
+        {
+            // Docker Scout encodes the tail of the module path as the purl subpath.
+            var component = new Component
+            {
+                Name = "aws-sdk-go-v2",
+                Version = "1.17.67",
+                Purl = "pkg:golang/github.com/aws/aws-sdk-go-v2@v1.17.67#credentials"
+            };
+
+            GolangProcessor.NormalizeGolangComponent(component);
+
+            Assert.AreEqual("github.com/aws/aws-sdk-go-v2/credentials", component.Name);
+            Assert.AreEqual("v1.17.67", component.Version);
+            Assert.AreEqual("pkg:golang/github.com/aws/aws-sdk-go-v2/credentials@v1.17.67", component.Purl);
+        }
+
+        [Test]
+        public void NormalizeGolangComponent_MajorVersionSubpath_MatchesFullPathSpelling()
+        {
+            // Scout emits the same module both ways; both must normalize to one component.
+            var viaSubpath = new Component { Name = "govultr", Version = "2.17.2", Purl = "pkg:golang/github.com/vultr/govultr@v2.17.2#v2" };
+            var viaFullPath = new Component { Name = "v2", Version = "2.17.2", Purl = "pkg:golang/github.com/vultr/govultr/v2@v2.17.2" };
+
+            GolangProcessor.NormalizeGolangComponent(viaSubpath);
+            GolangProcessor.NormalizeGolangComponent(viaFullPath);
+
+            Assert.AreEqual("github.com/vultr/govultr/v2", viaSubpath.Name);
+            Assert.AreEqual(viaFullPath.Name, viaSubpath.Name);
+            Assert.AreEqual(viaFullPath.Purl, viaSubpath.Purl);
+        }
+
+        [Test]
         public void NormalizeGolangComponent_KeepsMajorVersionSuffixInModulePath()
         {
             var component = new Component
