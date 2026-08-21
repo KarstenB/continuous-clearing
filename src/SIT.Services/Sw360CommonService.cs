@@ -76,6 +76,12 @@ namespace SIT.Services
                     {
                         sw360components = GetComponentExistStatus(componentName, externalIdKey, sw360ComponentsList);
 
+                        if (sw360components.isComponentExist && !IsUsableMatch(componentName, sw360components.Sw360components?.Name, componentExternalId))
+                        {
+                            Logger.DebugFormat("GetComponentDataByExternalId(): Discarding SW360 component '{0}' for '{1}'; it only shares the purl {2} and would hide the package name.", sw360components.Sw360components?.Name, componentName, componentExternalId);
+                            sw360components = new ComponentStatus() { isComponentExist = false };
+                        }
+
                         if (sw360components.isComponentExist)
                         {
                             break;
@@ -155,6 +161,11 @@ namespace SIT.Services
                     if (sw360releasesdata.Count > 0)
                     {
                         Releasestatus releaseStatus = GetReleaseExistStatus(releaseName, externalIdKey, sw360releasesdata);
+                        if (releaseStatus.isReleaseExist && !IsUsableMatch(releaseName, releaseStatus.sw360Releases?.Name, releaseExternalId))
+                        {
+                            Logger.DebugFormat("GetReleaseDataByExternalId(): Discarding SW360 release '{0}' for '{1}'; it only shares the purl {2} and would hide the package name.", releaseStatus.sw360Releases?.Name, releaseName, releaseExternalId);
+                            continue;
+                        }
                         if (releaseStatus.isReleaseExist)
                         {
                             releasestatus.sw360Releases = releaseStatus.sw360Releases;
@@ -242,10 +253,27 @@ namespace SIT.Services
             Dictionary<int, Sw360Releases> releaseCollection = new Dictionary<int, Sw360Releases>();
 
             Logger.DebugFormat("GetReleaseExistStatus(): Identifying release exist status from SW360: {0}", name);
+
+            Sw360Releases namedRelease = sw360releasesdata.FirstOrDefault(release => MatchesName(name, release.Name));
+            if (namedRelease != null)
+            {
+                Logger.DebugFormat("GetReleaseExistStatus(): Selected release '{0}' for the name '{1}' by exact name match.\n", namedRelease.Name, name);
+                return new Releasestatus()
+                {
+                    sw360Releases = namedRelease,
+                    isReleaseExist = HasPurl(namedRelease.ExternalIds),
+                };
+            }
+
             foreach (var release in sw360releasesdata)
             {
                 string packageUrl = string.Empty;
                 packageUrl = GetPackageUrlValue(externlaIdKey, release, packageUrl);
+                if (string.IsNullOrWhiteSpace(packageUrl))
+                {
+                    UpdateCollection(name, ref releaseCollection, release);
+                    continue;
+                }
                 try
                 {
                     var purlids = JsonConvert.DeserializeObject<List<string>>(packageUrl);
@@ -284,11 +312,28 @@ namespace SIT.Services
             Dictionary<int, Sw360Components> componentCollection = new Dictionary<int, Sw360Components>();
 
             Logger.DebugFormat("GetComponentExistStatus(): Identifying component exist status from SW360 : {0}", name);
+
+            Sw360Components namedComponent = sw360components.FirstOrDefault(component => MatchesName(name, component.Name));
+            if (namedComponent != null)
+            {
+                Logger.DebugFormat("GetComponentExistStatus(): Component Name : {0} selected {1}, by exact name match \n", name, namedComponent.Name);
+                return new ComponentStatus()
+                {
+                    Sw360components = namedComponent,
+                    isComponentExist = HasPurl(namedComponent.ExternalIds),
+                };
+            }
+
             foreach (var componentsData in sw360components)
             {
                 string packageUrl = string.Empty;
                 packageUrl = GetPackageUrlValue(externlaIdKey, componentsData, packageUrl);
                 Logger.DebugFormat("GetComponentExistStatus(): Component Name : {0} from {1}", name, packageUrl);
+                if (string.IsNullOrWhiteSpace(packageUrl))
+                {
+                    UpdateCollection(name, ref componentCollection, componentsData);
+                    continue;
+                }
                 try
                 {
                     var purlids = JsonConvert.DeserializeObject<List<string>>(packageUrl);
@@ -366,6 +411,44 @@ namespace SIT.Services
             }
 
             return packageUrl;
+        }
+
+        /// <summary>
+        /// Tells whether an SW360 record carries the package name it was looked up with.
+        /// </summary>
+        /// <param name="name">Package name taken from the BOM.</param>
+        /// <param name="sw360Name">Name of the SW360 component or release found through the purl.</param>
+        /// <returns>true when both names are equal</returns>
+        private static bool MatchesName(string name, string sw360Name)
+        {
+            return !string.IsNullOrWhiteSpace(sw360Name)
+                && sw360Name.Trim().Equals(name?.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Tells whether an SW360 record is identified by a purl at all.
+        /// </summary>
+        /// <param name="externalIds"></param>
+        /// <returns>true when a package-url or purl.id is set</returns>
+        private static bool HasPurl(ExternalIds externalIds)
+        {
+            return !string.IsNullOrEmpty(externalIds?.Package_Url) || !string.IsNullOrEmpty(externalIds?.Purl_Id);
+        }
+
+        /// <summary>
+        /// Decides whether a purl match may be used even though the SW360 name differs from the package name.
+        /// Cargo crates are always cleared under their own crate name, because SW360 holds umbrella components
+        /// (for example "futures" carrying every "futures-*" purl) that would otherwise absorb them.
+        /// </summary>
+        /// <param name="name">Package name taken from the BOM.</param>
+        /// <param name="sw360Name">Name of the SW360 component or release found through the purl.</param>
+        /// <param name="externalId">Purl the record was looked up with.</param>
+        /// <returns>true when the match may be used</returns>
+        private static bool IsUsableMatch(string name, string sw360Name, string externalId)
+        {
+            bool nameIsMandatory = !string.IsNullOrEmpty(externalId)
+                && externalId.Contains(Dataconstant.PurlCheck()["CARGO"], StringComparison.OrdinalIgnoreCase);
+            return !nameIsMandatory || MatchesName(name, sw360Name);
         }
 
         /// <summary>
