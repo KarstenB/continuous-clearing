@@ -157,6 +157,43 @@ Files:
         }
 
         [Test]
+        public async Task ResolveSourcePackageAsync_BinaryWithOwnPoolFolder_FindsDscInSourcePoolFolder()
+        {
+            StubHttpMessageHandler handler = CreateArchives();
+            handler.Content[$"{VendorArchive}/dists/trixie/main/binary-amd64/Packages"] = VendorPackages + @"
+Package: libssl3t64
+Version: 3.5.6-1~deb13u2+dhi1
+Source: openssl
+Filename: pool/trixie/main/l/li/libssl3t64_3.5.6-1~deb13u2+dhi1/libssl3t64_3.5.6-1~deb13u2+dhi1_amd64.deb
+";
+            handler.Content[$"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6-1~deb13u2+dhi1.dsc"] = @"Format: 3.0 (quilt)
+Source: openssl
+Version: 3.5.6-1~deb13u2+dhi1
+Files:
+ 111 100 openssl_3.5.6.orig.tar.gz
+ 222 200 openssl_3.5.6-1~deb13u2+dhi1.debian.tar.xz
+";
+            handler.Content[$"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6.orig.tar.gz"] = "upstream";
+            handler.Content[$"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6-1~deb13u2+dhi1.debian.tar.xz"] = "delta";
+            using AptRepositoryService service = new(new HttpClient(handler));
+
+            AptSourceResolution resolution = await service.ResolveSourcePackageAsync(
+                Repositories(VendorArchive), "libssl3t64", "3.5.6-1~deb13u2+dhi1", new[] { "trixie" });
+
+            Assert.That(resolution, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(resolution.Name, Is.EqualTo("openssl"));
+                Assert.That(resolution.FileUrls, Is.EquivalentTo(new[]
+                {
+                    $"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6-1~deb13u2+dhi1.dsc",
+                    $"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6.orig.tar.gz",
+                    $"{VendorArchive}/pool/trixie/main/o/op/openssl_3.5.6-1~deb13u2+dhi1/openssl_3.5.6-1~deb13u2+dhi1.debian.tar.xz"
+                }));
+            });
+        }
+
+        [Test]
         public async Task ResolveSourcePackageAsync_UnknownPackage_ReturnsNull()
         {
             using AptRepositoryService service = new(new HttpClient(CreateArchives()));

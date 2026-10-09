@@ -154,9 +154,20 @@ namespace SIT.Create
             string sourceName = binary.SourceName ?? binaryName;
             string sourceVersion = binary.SourceVersion ?? binary.Version;
             string dscFileName = $"{sourceName}_{StripEpoch(sourceVersion)}.dsc";
-            string dscUrl = BuildFileUrl(context.ArchiveRoot, directory, dscFileName);
 
-            List<string> fileNames = dscUrl == null ? null : await ReadFileNamesFromDscAsync(dscUrl);
+            List<string> fileNames = null;
+            string dscUrl = null;
+            foreach (string candidate in PoolDirectoryCandidates(directory, binaryName, binary.Version, sourceName, sourceVersion))
+            {
+                dscUrl = BuildFileUrl(context.ArchiveRoot, candidate, dscFileName);
+                fileNames = dscUrl == null ? null : await ReadFileNamesFromDscAsync(dscUrl);
+                if (fileNames != null)
+                {
+                    directory = candidate;
+                    break;
+                }
+            }
+
             if (fileNames == null)
             {
                 return null;
@@ -657,6 +668,42 @@ namespace SIT.Create
             }
 
             return uri.AbsoluteUri;
+        }
+
+        /// <summary>
+        /// Returns the pool folders that may hold the .dsc of a binary package. Archives such as the Docker
+        /// Hardened Images archive keep one folder per package ("l/li/libssl3t64_ver"), so the source package
+        /// of a differently named binary lives in its own folder ("o/op/openssl_ver").
+        /// </summary>
+        internal static IEnumerable<string> PoolDirectoryCandidates(string binaryDirectory, string binaryName,
+                                                                     string binaryVersion, string sourceName,
+                                                                     string sourceVersion)
+        {
+            yield return binaryDirectory;
+
+            string[] segments = binaryDirectory.Trim('/').Split('/');
+            int count = segments.Length;
+            if (count < 3 || string.IsNullOrEmpty(binaryName) || string.IsNullOrEmpty(sourceName) ||
+                segments[count - 1] != $"{binaryName}_{StripEpoch(binaryVersion)}" ||
+                segments[count - 2] != PoolPrefix(binaryName, 2) ||
+                segments[count - 3] != PoolPrefix(binaryName, 1))
+            {
+                yield break;
+            }
+
+            segments[count - 3] = PoolPrefix(sourceName, 1);
+            segments[count - 2] = PoolPrefix(sourceName, 2);
+            segments[count - 1] = $"{sourceName}_{StripEpoch(sourceVersion)}";
+            string sourceDirectory = string.Join('/', segments);
+            if (sourceDirectory != binaryDirectory.Trim('/'))
+            {
+                yield return sourceDirectory;
+            }
+        }
+
+        private static string PoolPrefix(string name, int length)
+        {
+            return name.Length <= length ? name : name.Substring(0, length);
         }
 
         internal static bool VersionMatches(string indexVersion, string requestedVersion)
