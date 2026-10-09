@@ -102,7 +102,7 @@ namespace SIT.Create
             }
 
             //Validate Fossology Url
-            if (appSettings.SW360.Fossology.EnableTrigger && !appSettings.IsTestMode)
+            if (CreatorValidator.ShouldRunFossologyPreflight(appSettings))
             {
                 HttpClient client = new HttpClient
                 {

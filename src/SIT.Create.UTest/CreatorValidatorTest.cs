@@ -47,6 +47,34 @@ namespace SIT.Create.UTest
             mockSw360CreatorService = new Mock<ISw360CreatorService>();
 
         }
+        [TestCase(true, false, false, true)]
+        [TestCase(true, true, false, false)]
+        [TestCase(false, false, false, false)]
+        [TestCase(true, false, true, false)]
+        public void ShouldRunFossologyPreflight_ReturnsExpectedResult(
+            bool enableTrigger,
+            bool skipPreflightCheck,
+            bool isTestMode,
+            bool expected)
+        {
+            var appSettings = new CommonAppSettings
+            {
+                Mode = isTestMode ? "test" : string.Empty,
+                SW360 = new SW360
+                {
+                    Fossology = new Fossology
+                    {
+                        EnableTrigger = enableTrigger,
+                        SkipPreflightCheck = skipPreflightCheck
+                    }
+                }
+            };
+
+            bool result = CreatorValidator.ShouldRunFossologyPreflight(appSettings);
+
+            Assert.AreEqual(expected, result);
+        }
+
         [TestCase]
         public async Task ValidateAppSettings_TestPositive()
         {

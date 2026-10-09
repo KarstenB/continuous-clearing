@@ -33,6 +33,13 @@ namespace SIT.Create
         static readonly ILog Logger = LoggerFactory.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private const string FossologyUrlValidationContext = "Fossology URL Validation";
 
+        public static bool ShouldRunFossologyPreflight(CommonAppSettings appSettings)
+        {
+            return appSettings.SW360.Fossology.EnableTrigger &&
+                !appSettings.SW360.Fossology.SkipPreflightCheck &&
+                !appSettings.IsTestMode;
+        }
+
         public static async Task<int> ValidateAppSettings(CommonAppSettings appSettings, ISw360ProjectService sw360ProjectService, ProjectReleases projectReleases)
         {
             string sw360ProjectName = await sw360ProjectService.GetProjectNameByProjectIDFromSW360(appSettings.SW360.ProjectID, appSettings.SW360.ProjectName, projectReleases);

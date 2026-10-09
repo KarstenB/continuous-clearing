@@ -145,6 +145,7 @@ namespace SIT.Common
             }
         }
         public bool EnableTrigger { get; set; }
+        public bool SkipPreflightCheck { get; set; }
     }
     public class Jfrog
     {
