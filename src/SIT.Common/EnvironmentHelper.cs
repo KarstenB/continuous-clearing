@@ -27,8 +27,9 @@ namespace SIT.Common
                 PipelineArtifactUploader.UploadLogs();
                 EnvironmentExit(exitCode);
             }
-            else if (exitCode == 2)
+            else if (exitCode == 2 && Environment.ExitCode == 0)
             {
+                // Action items must not hide an error exit code set earlier in the run.
                 Environment.ExitCode = 2;
             }
         }
